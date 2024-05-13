@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>AbpStudy</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.3.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="Volo.Abp.BackgroundJobs.Abstractions" Version="8.1.1" />
+    <PackageReference Include="Volo.Abp.Dapper" Version="8.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AbpStudy.Domain\AbpStudy.Domain.csproj" />
+    <ProjectReference Include="..\AbpStudy.TestBase\AbpStudy.TestBase.csproj" />
+  </ItemGroup>
+
+</Project>
