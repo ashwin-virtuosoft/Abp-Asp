@@ -59,6 +59,7 @@ public class AbpStudyDbContext :
     public DbSet<JobportalDetails> JobportalDetails { get; set; }
     public DbSet<JobDetails> Jobdetails { get; set; }
     public DbSet<JobAllDetails> JobAllDetails { get; set; }
+    public DbSet<JobSeeker>JobSeekers { get; set; }
 
     public AbpStudyDbContext(DbContextOptions<AbpStudyDbContext> options)
         : base(options)
@@ -93,8 +94,8 @@ public class AbpStudyDbContext :
         builder.Entity<JobportalDetails>().HasNoKey();
         builder.Entity<Student>().HasNoKey();
         builder.Entity<JobDetails>().HasNoKey();
-        //builder.Entity<JobAllDetails>().HasNoKey();
-
+        builder.Entity<JobAllDetails>().HasNoKey();
+        builder.Entity<JobSeeker>().HasNoKey();
 
         builder.Entity<Teacher>(t =>
         {

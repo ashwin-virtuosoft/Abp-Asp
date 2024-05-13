@@ -101,36 +101,84 @@ namespace AbpStudy.Repository
         }
 
 
+        //First Method For Dapper One to Many Relation
+
+
+        //public async Task<List<JobAllDetails>> GetAllDetails(int employeeId)
+        //{
+        //    try
+        //    {
+        //        using (var dbConnection = GetDbConnection())
+        //        {
+        //            var parameters = new DynamicParameters();
+        //            parameters.Add("@Employee_id", employeeId);
+
+        //            var jobAllDetailsDictionary = new Dictionary<int, JobAllDetails>();
+        //            var result = await dbConnection.QueryAsync<JobAllDetails, JobSeeker, JobAllDetails>(
+        //                sql: "GetAllJobDetails",
+        //                map: (jobAllDetails, jobSeeker) =>
+        //                {
+        //                    if (!jobAllDetailsDictionary.TryGetValue(jobAllDetails.Employee_Id, out var jobDetails))
+        //                    {
+        //                        jobDetails = jobAllDetails;
+        //                        jobDetails.jobSeekers = new List<JobSeeker>();
+        //                        jobAllDetailsDictionary.Add(jobDetails.Employee_Id, jobDetails);
+        //                    }
+
+        //                    jobDetails.jobSeekers.Add(jobSeeker);
+        //                    return jobDetails;
+        //                },
+        //                param: parameters,
+        //                splitOn: "JobSeeker_Id",
+        //                commandType: CommandType.StoredProcedure
+        //            );
+
+        //            return result?.Distinct().ToList();
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error: {ex.Message}");
+        //        throw;
+        //    }
+        //}
+
+
+        //Second Method For Dapper One to Many Relation
         public async Task<List<JobAllDetails>> GetAllDetails(int employeeId)
         {
             try
             {
-                using (var dbConnection = GetDbConnection())
+                using (var dbCon = GetDbConnection())
                 {
                     var parameters = new DynamicParameters();
-                    parameters.Add("@Employee_id", employeeId);
+                    parameters.Add("@employee_id", employeeId);
 
-                    var jobAllDetailsDictionary = new Dictionary<int, JobAllDetails>();
-                    var result = await dbConnection.QueryAsync<JobAllDetails, JobSeeker, JobAllDetails>(
-                        sql: "GetAllJobDetails",
-                        map: (jobAllDetails, jobSeeker) =>
+                    var query = "GetAllJobDetails";
+                    var result = await dbCon.QueryAsync<JobAllDetails, JobSeeker, JobAllDetails>(
+                        query,
+                        (jobAllDetails, jobSeeker) =>
                         {
-                            if (!jobAllDetailsDictionary.TryGetValue(jobAllDetails.Employee_Id, out var jobDetails))
-                            {
-                                jobDetails = jobAllDetails;
-                                jobDetails.jobSeekers = new List<JobSeeker>();
-                                jobAllDetailsDictionary.Add(jobDetails.Employee_Id, jobDetails);
-                            }
-
-                            jobDetails.jobSeekers.Add(jobSeeker);
-                            return jobDetails;
+                            jobAllDetails.jobSeekers ??= new List<JobSeeker>();
+                            jobAllDetails.jobSeekers.Add(jobSeeker);
+                            return jobAllDetails;
                         },
                         param: parameters,
                         splitOn: "JobSeeker_Id",
                         commandType: CommandType.StoredProcedure
                     );
-
-                    return result?.Distinct().ToList();
+                    var groupedResult = result.GroupBy(x => x.Employee_Id)
+                                     .Select(g => new JobAllDetails
+                                     {
+                                         Employee_Id = g.Key,
+                                         Employee_Name = g.First().Employee_Name,
+                                         Position = g.First().Position,
+                                         Department = g.First().Department,
+                                         Hire_Date = g.First().Hire_Date,
+                                         jobSeekers = g.SelectMany(e => e.jobSeekers).ToList()
+                                     })
+                                     .ToList();
+                    return groupedResult;
                 }
             }
             catch (Exception ex)
@@ -139,7 +187,6 @@ namespace AbpStudy.Repository
                 throw;
             }
         }
-
 
 
 
